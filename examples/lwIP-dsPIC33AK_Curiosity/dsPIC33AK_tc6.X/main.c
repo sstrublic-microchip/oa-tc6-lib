@@ -328,11 +328,10 @@ static void CheckButton(uint8_t instance, bool newLevel, bool *oldLevel)
 static void OnPlcaStatus(int8_t idx, bool success, bool plcaStatus)
 {
     (void)idx;
-    m.firstStateChecked = true;
 
     if (true == success)
     {
-        if (plcaStatus != m.lastBeaconState)
+        if ((false == m.firstStateChecked) || (plcaStatus != m.lastBeaconState))
         {
             m.lastBeaconState = plcaStatus;
 
@@ -352,6 +351,8 @@ static void OnPlcaStatus(int8_t idx, bool success, bool plcaStatus)
     {
         PRINT(ESC_RED "PLCA status register read failed\r\n" ESC_RESETCOLOR);
     }
+
+    m.firstStateChecked = true;
 }
 
 /**
@@ -359,7 +360,7 @@ static void OnPlcaStatus(int8_t idx, bool success, bool plcaStatus)
  */
 static void checkPlcaStatus(void)
 {
-    uint32_t now = SysTick_GetTick();
+    uint32_t now = SysTick_GetTickMs();
 
     if ((now - m.lastBeaconCheck) >= DELAY_BEACON_CHECK)
     {
@@ -377,7 +378,7 @@ static void checkPlcaStatus(void)
  */
 static void checkSystemStatus(void)
 {
-    uint32_t now = SysTick_GetTick();
+    uint32_t now = SysTick_GetTickMs();
 
     if ((now - m.lastLed) >= DELAY_LED)
     {

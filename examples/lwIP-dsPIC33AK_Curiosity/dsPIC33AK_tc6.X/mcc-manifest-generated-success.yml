@@ -2,8 +2,8 @@
 
 manifest_file_version: 1.0.0
 project: dsPIC33AK_tc6
-creation_date: 2025-11-18T11:27:45.454-07:00[America/Phoenix]
-operating_system: Windows 10
+creation_date: 2025-11-26T11:47:30.101-07:00[America/Phoenix]
+operating_system: Windows 11
 mcc_mode: IDE
 mcc_mode_version: v6.25
 device_name: dsPIC33AK512MPS512

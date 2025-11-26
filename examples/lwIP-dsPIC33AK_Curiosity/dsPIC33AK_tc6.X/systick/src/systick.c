@@ -46,10 +46,11 @@
 #endif
 #include <libpic30.h>
 
+/// @brief Defines the Systick object.
 typedef struct
 {
-   volatile uint32_t         tickCounter;
-} SYSTICK_OBJECT ;
+   volatile uint64_t tickCounter;
+} SYSTICK_OBJECT;
 
 static SYSTICK_OBJECT systick;
 
@@ -73,22 +74,37 @@ void SysTick_Initialize(void)
     Timer1.Start();
 }
 
-uint32_t SysTick_GetTick(void)
+uint32_t SysTick_GetTickMs(void)
 {
     volatile uint32_t now;
 
     ENTER_CRITICAL();
-    now = systick.tickCounter;
+    now = (uint32_t)(systick.tickCounter / SYSTICK_TIMER_SCALER_MS);
     LEAVE_CRITICAL();
 
     return now;
 }
 
-void SysTick_DelayTicks(uint32_t ticks)
+uint64_t SysTick_GetTickUs(void)
 {
-    __delay_ms(ticks);
+    volatile uint64_t now;
+
+    ENTER_CRITICAL();
+    now = (systick.tickCounter * SYSTICK_TIMER_SCALER_US);
+    LEAVE_CRITICAL();
+
+    return now;
 }
 
+void SysTick_DelayMs(uint32_t milliseconds)
+{
+    __delay_ms(milliseconds);
+}
+
+void SysTick_DelayUs(uint32_t microseconds)
+{
+    __delay_us(microseconds);
+}
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 /*                  PRIVATE  FUNCTION IMPLEMENTATIONS                   */

@@ -36,8 +36,27 @@
 /*                         PUBLIC FUNCTIONS                             */
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
+// The systick timer runs as a sub-millisecond timer.
+#define SYSTICK_TIMER_SCALER_MS 100ULL // Divide by this value to get the millisecond tick count
+#define SYSTICK_TIMER_SCALER_US 10ULL  // Multiply this value to get the microsecond tick count
+
+/// @brief Initialie the Systick subsystem.
 void SysTick_Initialize(void);
-uint32_t SysTick_GetTick(void);
-void SysTick_DelayTicks(uint32_t ticks);
+
+/// @brief Get the system tick count in milliseconds.
+/// @return uint32_t count in milliseconds.
+uint32_t SysTick_GetTickMs(void);
+
+/// @brief Get the system tick count in microseconds.
+/// @return uint64_t count in microseconds.
+uint64_t SysTick_GetTickUs(void);
+
+/// @brief Delay for the specified number of milliseconds.
+/// @param milliseconds The number of milliseconds to delay.
+void SysTick_DelayMs(uint32_t milliseconds);
+
+/// @brief Delay for the specified number of microseconds.
+/// @param microseconds The number of microseconds to delay.
+void SysTick_DelayUs(uint32_t microseconds);
 
 #endif /* __SYSTICK_H__ */

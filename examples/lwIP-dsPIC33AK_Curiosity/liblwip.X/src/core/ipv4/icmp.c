@@ -397,15 +397,14 @@ err_t icmp_send_request(ip_addr_t *dest, u8_t type, u8_t code, u16_t id, u16_t s
     icmphdr->seqno = PP_HTONS(seq);
 
     // Insert the timestamp.  For us, since we do not have NTP, this will just insert the number of
-    // milliseconds since startup.
+    // microseconds since startup.
     u8_t *data = (u8_t *)(icmphdr + 1);
-    u32_t now = sys_now();
+    u64_t now = sys_now_us();
 
-    *data++ = 0;
-    *data++ = 0;
-    *data++ = 0;
-    *data++ = 0;
-
+    *data++ = now >> 56;
+    *data++ = now >> 48;
+    *data++ = now >> 40;
+    *data++ = now >> 32;
     *data++ = now >> 24;
     *data++ = now >> 16;
     *data++ = now >> 8;

@@ -39,7 +39,7 @@
 
 #define START_DELAY  (10)
 
-#define GET_TICKS SysTick_GetTick
+#define GET_TICKS SysTick_GetTickMs
 
 static uint32_t startDelay = 0;
 static bool running = false;

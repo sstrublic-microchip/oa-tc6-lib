@@ -500,6 +500,11 @@ uint32_t sys_now(void)
     return TC6Stub_GetTick();
 }
 
+uint64_t sys_now_us(void)
+{
+    return TC6Stub_GetTickUs();
+}
+
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 /*             CALLBACK FUNCTION FROM TC6 Protocol Driver               */
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/

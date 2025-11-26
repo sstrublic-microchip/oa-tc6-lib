@@ -68,6 +68,11 @@ void TC6Stub_ReleaseInt(uint8_t idx);
  */
 uint32_t TC6Stub_GetTick(void);
 
+/** \brief Gets the current system time in microseconds.
+ * \return System ticks in microseconds.
+ */
+uint64_t TC6Stub_GetTickUs(void);
+
 /**
  * \brief Hardware implementation of SPI transfer function.
  * \param idx - The instance number of the hardware. Starting with 0 for the first hardware.

@@ -57,13 +57,13 @@ struct icmp_msg_data
 
     uint32_t start;         // Start time in ticks
 
-    uint32_t count;         // Number of pings send
+    uint32_t count;         // Number of pings sent
+    uint32_t received;      // Number of resoonses received
     uint32_t seq;           // ICMP sequence number
-    uint32_t received;      // Number of resoinses received
 
-    uint16_t min;           // Minimum receive time in milliseconds
-    uint16_t max;           // Maximum receive time in milliseconds
-    uint32_t accum;         // Accumulated time
+    uint64_t min;           // Minimum receive time
+    uint64_t max;           // Maximum receive time
+    uint64_t accum;         // Accumulated time
 
     bool active;            // Is a ping session active
     bool response;          // Was a response to the last ping recieved
@@ -82,7 +82,7 @@ void icmp_msg_timeout(void *arg);
 /// @param arg An input argument.
 static void icmp_stop_pings(void *arg)
 {
-    uint32_t now = SysTick_GetTick();
+    uint32_t now = SysTick_GetTickMs();
 
     // Session is no longer active.
     icmp_msg_data.active = false;
@@ -95,15 +95,18 @@ static void icmp_stop_pings(void *arg)
     sys_untimeout(icmp_msg_timeout, NULL);
 
     PRINT("\r\n--- %s ping statistics ---\r\n", ip);
-    PRINT("%lu packets transmitted, %lu received, %ld%% packet loss, time %ld ms\r\n",
+    PRINT("%lu packets transmitted, %lu received, %.1f%% packet loss, time %ld ms\r\n",
             icmp_msg_data.seq, icmp_msg_data.received,
-            (100 - (icmp_msg_data.received * 100) / icmp_msg_data.seq),
+            (100.0 - ((double)icmp_msg_data.received * 100.0) / icmp_msg_data.seq),
             (now - icmp_msg_data.start));
 
     if (0 < icmp_msg_data.received)
     {
-        double avg = ((double)icmp_msg_data.accum / (double)icmp_msg_data.received);
-        PRINT("rtt min/avg/max = %d/%.1f/%d ms\r\n", icmp_msg_data.min, avg, icmp_msg_data.max);
+        // Scale to milliseconds.
+        double mintime = (double)(icmp_msg_data.min / 1000.0);
+        double maxtime = (double)(icmp_msg_data.max / 1000.0);
+        double avgtime = ((double)icmp_msg_data.accum / (double)icmp_msg_data.received) / 1000.0;
+        PRINT("rtt min/avg/max = %.2f/%.3f/%.2f ms\r\n", mintime, avgtime, maxtime);
     }
 }
 
@@ -118,7 +121,7 @@ void icmp_msg_timeout(void *arg)
     if (false == icmp_msg_data.response)
     {
         // CR/LF on the first output.
-        if (1 == icmp_msg_data.seq)
+        if (1UL == icmp_msg_data.seq)
         {
             PRINT("\r\n");
         }
@@ -169,7 +172,7 @@ void icmp_msg_timeout(void *arg)
 /// @return ERR_CONSUMED if the message was expected, ERR_OK if not.
 static err_t icmp_msg_callback(void *arg, uint8_t* payload)
 {
-    u32_t now = SysTick_GetTick();
+    uint64_t now = SysTick_GetTickUs();
     struct ip_hdr *iphdr = (struct ip_hdr *)payload;
     s16_t hlen  = IPH_HL(iphdr) * 4;
     ip_addr_t *dstaddr = (ip_addr_t *)&iphdr->dest;
@@ -222,13 +225,14 @@ static err_t icmp_msg_callback(void *arg, uint8_t* payload)
                 {
                     uint16_t datalen = PP_HTONS(iphdr->_len) - hlen;
 
-                    // Point to where the timestamp is, and we are only using the lower 32 bits of that for now.
-                    uint8_t *data = (uint8_t *)(iecho + 1) + sizeof(uint32_t);
-                    uint32_t msgtime = ((uint32_t)*data << 24) | ((uint32_t)*(data + 1) << 16) | ((uint32_t)*(data + 2) << 8) | (uint32_t)*(data + 3);
-                    u32_t diff = now - msgtime;
+                    // Point to where the timestamp is.  this is a 64 bit value expressed in microseconds.
+                    uint8_t *data = (uint8_t *)(iecho + 1);
+                    uint64_t msgtime = ((uint64_t)*data << 56) | ((uint64_t)*(data + 1) << 48) | ((uint64_t)*(data + 2) << 40) | ((uint64_t)*(data + 2) << 32) |
+                                       ((uint64_t)*(data + 4) << 24) | ((uint64_t)*(data + 5) << 16) | ((uint64_t)*(data + 6) << 8) | ((uint64_t)*(data + 7));
+                    uint64_t diff = now - msgtime;
 
                     // Find min/max and count the number of msec for averaging.
-                    if ((0 == icmp_msg_data.min) || (diff < icmp_msg_data.min))
+                    if ((0ULL == icmp_msg_data.min) || (diff < icmp_msg_data.min))
                     {
                         icmp_msg_data.min = diff;
                     }
@@ -242,7 +246,7 @@ static err_t icmp_msg_callback(void *arg, uint8_t* payload)
 
                     // We received a response.
                     icmp_msg_data.received++;
-                    PRINT("%d bytes from %s: icmp_seq=%u ttl=%d time=%ld ms\r\n", datalen, ip, PP_HTONS(iecho->seqno), iphdr->_ttl, diff);
+                    PRINT("%d bytes from %s: icmp_seq=%u ttl=%d time=%.2f ms\r\n", datalen, ip, PP_HTONS(iecho->seqno), iphdr->_ttl, (double)(diff / 1000.0));
                 }
             } break;
 
@@ -278,7 +282,7 @@ void icmp_test_start(ip4_addr_t addr)
 
         // Send the first ping.
         icmp_msg_data.total++;
-        icmp_msg_data.start = SysTick_GetTick();
+        icmp_msg_data.start = SysTick_GetTickMs();
 
         char ip[16] = {0};
         build_ip_string(ip, &icmp_msg_data.addr);

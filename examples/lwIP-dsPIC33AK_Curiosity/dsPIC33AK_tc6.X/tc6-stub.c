@@ -130,9 +130,9 @@ bool TC6Stub_Init(uint8_t idx, uint8_t pMac[6])
             {
                 Ext_Int_SetInterruptHandler(IntHandler);
                 TC6_RESET_SetLow();
-                SysTick_DelayTicks(10);
+                SysTick_DelayMs(10);
                 TC6_RESET_SetHigh();
-                SysTick_DelayTicks(10);
+                SysTick_DelayMs(10);
             }
             break;
 
@@ -177,7 +177,12 @@ void TC6Stub_ReleaseInt(uint8_t idx)
 
 uint32_t TC6Stub_GetTick(void)
 {
-    return SysTick_GetTick();
+    return SysTick_GetTickMs();
+}
+
+uint64_t TC6Stub_GetTickUs(void)
+{
+    return SysTick_GetTickUs();
 }
 
 bool TC6Stub_SpiTransaction(uint8_t idx, uint8_t *pTx, uint8_t *pRx, uint16_t len)

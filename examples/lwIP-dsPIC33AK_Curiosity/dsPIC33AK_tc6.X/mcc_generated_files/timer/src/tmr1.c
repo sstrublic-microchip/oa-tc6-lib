@@ -64,8 +64,8 @@ void TMR1_Initialize (void)
     T1CON = 0x0UL;
     //TMR 0x0; 
     TMR1 = 0x0UL;
-    //Period 1 ms; Frequency 100,000,000 Hz; PR 99999; 
-    PR1 = 0x1869FUL;
+    //Period 0.01 ms; Frequency 100,000,000 Hz; PR 999; 
+    PR1 = 0x3E7UL;
     
     TMR1_TimeoutCallbackRegister(&TMR1_TimeoutCallback);
 
