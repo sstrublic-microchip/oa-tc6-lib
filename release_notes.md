@@ -2,6 +2,14 @@
 
 # OPEN Alliance TC6 Protocol Driver for LAN8650/1 Release Notes
 
+## OPEN Alliance TC6 Protocol Driver for LAN8650/1 Release v3.1.4
+### New Features
+ - Added interfaces for error and event string retrieval.
+
+### Bugfixes
+ - Added protection around TC6 register initialization to prevent reentrancy.
+ - Added protection in TC6_Reset() to ensure initialization is complete before resetting.
+
 ## OPEN Alliance TC6 Protocol Driver for LAN8650/1 Release v3.1.3
 ### Bugfixes
 
@@ -41,7 +49,7 @@
 
 * [MPLAB® X IDE v610](https://www.microchip.com/mplab/mplab-x-ide) or later
 * [MPLAB® XC32 C/C++ Compiler v4.30](https://www.microchip.com/mplab/compilers)
- 
+
 ## OPEN Alliance TC6 Protocol Driver for LAN8650/1 Release v3.0.1
 
 ### Bugfixes
